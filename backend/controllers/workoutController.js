@@ -1,4 +1,5 @@
 const Workout = require('../models/Workout');
+const mongoose = require('mongoose');
 
 //get all workouts
 const getWorkouts = async (req, res) => {
@@ -7,6 +8,21 @@ const getWorkouts = async (req, res) => {
 }
 
 //get a single workout
+const getWorkout = async (req,res)=>{
+  const {id} = req.params;
+  if(!mongoose.Types.ObjectId.isValid(id)){
+    return res.status(404).json({err:'Invalid ID'});
+  }
+
+    const workout = await Workout.findById(id);
+
+  if(!workout){
+    return res.status(404).json({err:'No such workout'});
+  }
+
+  res.status(200).json(workout);
+}
+
 
 //create a new workout
 
@@ -25,7 +41,42 @@ const createWorkout = async (req, res) => {
 };
 
 //delete a workout
+const deleteWorkout = async (req,res)=>{
+  const {id} = req.params;
+  if(!mongoose.Types.ObjectId.isValid(id)){
+    return res.status(404).json({err:'Invalid ID'});
+  };
+  const workout = await Workout.findByIdAndDelete(id);
+  if(!workout){
+    return res.status(404).json({err:'No such workout'});
+  }
+  res.status(200).json(workout);
+
+}
+
 
 //update a workout
 
-module.exports = {createWorkout,getWorkouts};
+const updateWorkout = async (req, res) => {
+  const {id} = req.params;
+  if(!mongoose.Types.ObjectId.isValid(id)){
+    return res.status(404).json({err:'Invalid ID'});
+  };
+
+  const workout = await Workout.findOneAndUpdate({_id:id},{
+    // $set:req.body
+    ... req.body
+  },{new:true});
+  if(!workout){
+    return res.status(404).json({err:'No such workout'});
+  }
+  res.status(200).json(workout);
+}
+
+module.exports = {
+  createWorkout,
+  getWorkouts,
+  getWorkout,
+  deleteWorkout,
+  updateWorkout
+};
